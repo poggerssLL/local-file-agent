@@ -32,6 +32,7 @@ Seu Objetivo (Etapa 3 - Hashes SHA-256 e Detecção de Duplicidades):
 Regras Invioláveis:
 - Operação 100% SOMENTE LEITURA: nenhuma modificação, deleção ou movimentação de arquivos em disco;
 - Não acesse nem processe arquivos reais de Erick; trabalhe estritamente com os fixtures sintéticos;
+- Mandato de Delegação Ativa: Não execute a Etapa 3 de forma solitária ou monobloco. Decomponha a entrega em sub-papéis especializados (especificação de chunks, implementação de I/O, suíte de testes e auditoria de conformidade), registrando explicitamente a proveniência de cada atividade no relatório;
 - Mantenha 100% de confinamento ao diretório do projeto;
 - Não execute git push sem aprovação nominal expressa de Erick.
 ```
