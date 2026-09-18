@@ -137,3 +137,33 @@ class ExecutionPlan:
                 for a in self.actions
             ]
         }
+
+
+@dataclass
+class ScannerConfig:
+    """Configuracao de seguranca e filtros para o inventario de arquivos."""
+    include_hidden: bool = False
+    follow_symlinks: bool = False
+    max_depth: Optional[int] = None
+    allowed_extensions: Optional[List[str]] = None
+    max_files_limit: int = 50_000
+
+
+@dataclass
+class ScanReport:
+    """Relatorio imutavel da varredura somente leitura."""
+    base_dir: str
+    total_files: int
+    total_bytes: int
+    items: List[FileItem] = field(default_factory=list)
+    scan_duration_ms: float = 0.0
+    errors: List[str] = field(default_factory=list)
+
+    @property
+    def extension_counts(self) -> Dict[str, int]:
+        counts: Dict[str, int] = {}
+        for item in self.items:
+            ext = item.extension or "(sem extensao)"
+            counts[ext] = counts.get(ext, 0) + 1
+        return counts
+

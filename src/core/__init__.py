@@ -6,7 +6,10 @@ from .models import (
     OperationAction,
     ExecutionPlan,
     SecurityBoundaryError,
+    ScannerConfig,
+    ScanReport,
 )
+from .scanner import DirectoryScanner
 
 __all__ = [
     "FileItem",
@@ -15,4 +18,7 @@ __all__ = [
     "OperationAction",
     "ExecutionPlan",
     "SecurityBoundaryError",
+    "ScannerConfig",
+    "ScanReport",
+    "DirectoryScanner",
 ]

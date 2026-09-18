@@ -15,11 +15,12 @@ O roadmap orienta as próximas decisões. Trabalhe em uma única etapa por vez e
    - Definição dos contratos de dados centrais em `src/core/models.py`;
    - Implementação de regras invioláveis de aprovação humana e modo dry-run por padrão;
    - Suíte de testes unitários de fundação.
-2. **Etapa 2: Inventário Somente Leitura (Próximo Passo):**
+2. **Etapa 2: Inventário Somente Leitura (Concluída nesta fase):**
    - Varredura recursiva confinada a um diretório de entrada autorizado;
    - Coleta de metadados sem alteração de arquivos (tamanho, timestamps, extensões);
-   - Relatório de inventário estruturado em memória/JSON.
-3. **Etapa 3: Hashes e Detecção de Duplicidades:**
+   - Relatório de inventário estruturado com `ScannerConfig` e `ScanReport`;
+   - Testada com suíte sintética de testes (`tests/fixtures/synthetic_tree`).
+3. **Etapa 3: Hashes e Detecção de Duplicidades (Próximo Passo - Codex na Segunda-feira):**
    - Cálculo determinístico de hashes SHA-256 com leitura em blocos (*chunks*);
    - Identificação de arquivos idênticos e cálculo de espaço duplicado.
 4. **Etapa 4: Classificação Heurística e Determinística:**

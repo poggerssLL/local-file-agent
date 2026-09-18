@@ -7,11 +7,12 @@ Atualizado em: 2026-09-18.
 - **Repositório:** `Local File Agent`
 - **Caminho Local:** `C:/Users/erick/OneDrive/Documentos/Local File Agent`
 - **Branch:** `main`
-- **Etapa Atual:** **Etapa 1 - Fundação e Política de Segurança** (Concluída)
-- **Status do Sistema:** Fundação de tipos de dados, governança e testes unitários implementados. Nenhuma modificação em arquivos reais do usuário autorizada.
+- **Etapa Atual:** **Etapa 2 - Inventário Somente Leitura** (Concluída)
+- **Status do Sistema:** Fundação e módulo de varredura somente leitura (`DirectoryScanner`) implementados e testados contra fixtures sintéticos. Nenhuma modificação em arquivos reais do usuário autorizada.
 
 ## Evidências
 
-- **Modelos de Dados:** `src/core/models.py` (FileItem, OperationType, OperationAction, ExecutionPlan).
-- **Testes de Unidade:** aprovados em `tests/test_foundation.py`.
-- **Invariantes Ativas:** `approved: bool = False` por padrão em todos os planos; execução transacional rejeitada sem consentimento explícito.
+- **Modelos de Dados:** `src/core/models.py` (FileItem, OperationType, OperationAction, ExecutionPlan, ScannerConfig, ScanReport).
+- **Scanner Somente Leitura:** `src/core/scanner.py` (`DirectoryScanner`).
+- **Testes de Unidade:** 10 de 10 testes aprovados em `tests/test_foundation.py` e `tests/test_scanner.py`.
+- **Invariantes Ativas:** Leitura confinada a `base_dir`; filtros de segurança para arquivos ocultos e symlinks; planos inexecutáveis sem consentimento explícito.
