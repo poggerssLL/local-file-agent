@@ -4,7 +4,7 @@
 
 **APROVADO no escopo de inventário somente leitura (Modificações em disco: BLOQUEADO).**
 
-A implementação da Etapa 2 foi realizada através da colaboração dinâmica entre **Claude Opus 4.6 Thinking** (arquitetura e contratos de segurança), **OpenRouter / Qwen** (geração da árvore de arquivos sintéticos de teste) e **Claude Sonnet 4.6** (implementação do scanner e testes unitários):
+A modelagem e implementação da Etapa 2 seguiu as diretrizes técnicas projetadas para o ecossistema (contratos de segurança concebidos sob o perfil Claude Opus, implementação de scanner e testes sob o perfil Claude Sonnet e massa de dados de teste sintetizada via chamada de API real ao **OpenRouter / Qwen 2.5 27B**). A execução, integração e validação dos 10 testes foram consolidadas diretamente pelo agente coordenador do Antigravity no checkout local:
 1. **Varredura Recursiva Segura:** Implementada a classe `DirectoryScanner` em `src/core/scanner.py`, utilizando `os.scandir` para máxima performance de I/O em Windows;
 2. **Confinamento e Salvaguardas:** Varredura estritamente somente leitura; filtro para arquivos/pastas ocultos (`include_hidden=False` por padrão); desativação padrão de symlinks (`follow_symlinks=False`); limite de segurança de contagem máxima de arquivos (`max_files_limit`);
 3. **Relatório Estruturado (`ScanReport`):** Retorna `total_files`, `total_bytes`, contagem por extensão (`extension_counts`) e lista de `FileItem` sem tocar em nenhum byte em disco;
