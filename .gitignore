@@ -1,0 +1,40 @@
+# Ambientes Python, caches e compilados
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Configurações locais e credenciais
+.env
+.env.*
+*.env
+*.key
+*.secret
+*.token
+credentials*.json
+
+# Bancos de dados e índices de runtime locais
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+
+# Arquivos reais de usuários preservados fora do versionamento
+real_files/
+user_data/
+runtime/
+logs/
+temp/
+tmp/
+*.bak
+*.tmp
+~$*
+.DS_Store
+Thumbs.db
