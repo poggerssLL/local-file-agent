@@ -9,6 +9,11 @@ from .models import (
     ScannerConfig,
     ScanReport,
 )
+from .boundary import (
+    normalize_relative_path,
+    is_within_boundary,
+    resolve_within,
+)
 from .scanner import DirectoryScanner
 
 __all__ = [
@@ -21,4 +26,7 @@ __all__ = [
     "ScannerConfig",
     "ScanReport",
     "DirectoryScanner",
+    "normalize_relative_path",
+    "is_within_boundary",
+    "resolve_within",
 ]

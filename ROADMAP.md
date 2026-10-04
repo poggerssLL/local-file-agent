@@ -1,6 +1,6 @@
 # Roadmap: Local File Agent
 
-Atualizado em: 2026-09-18.
+Atualizado em: 2026-10-04.
 
 ## Regra de Sequência
 
@@ -20,27 +20,32 @@ O roadmap orienta as próximas decisões. Trabalhe em uma única etapa por vez e
    - Coleta de metadados sem alteração de arquivos (tamanho, timestamps, extensões);
    - Relatório de inventário estruturado com `ScannerConfig` e `ScanReport`;
    - Testada com suíte sintética de testes (`tests/fixtures/synthetic_tree`).
-3. **Etapa 3: Hashes e Detecção de Duplicidades (Próximo Passo - Codex na Segunda-feira):**
+3. **Etapa 2B: Hardening de Fronteira e Confinamento Físico (Concluída nesta fase):**
+   - Eliminação definitiva de `startswith` em favor de comparação por componentes (`commonpath` com `normpath`/`normcase`);
+   - Política unificada e estrita de caminhos relativos em planos de execução (`src/core/boundary.py`), rejeitando absolutos, UNC, unidades, drive-relative, ADS e escapes;
+   - Scanner endurecido (`src/core/scanner.py`): raiz física obrigatória, classificação de links via bit *name surrogate* preservando placeholders em nuvem do OneDrive, prevenção determinística de ciclos e diretórios duplicados, ordenação alfabética e sanitização de mensagens de erros/skips sem vazamento de caminhos absolutos locais;
+   - Reconhecimento e tratamento resiliente de corridas TOCTOU e separação explícita entre confinamento lexical e físico.
+4. **Etapa 3: Hashes e Detecção de Duplicidades (Próximo Passo):**
    - Cálculo determinístico de hashes SHA-256 com leitura em blocos (*chunks*);
    - Identificação de arquivos idênticos e cálculo de espaço duplicado.
-4. **Etapa 4: Classificação Heurística e Determinística:**
+5. **Etapa 4: Classificação Heurística e Determinística:**
    - Motor de regras por extensão, convenção de nomes e intervalos de datas;
    - Geração de sugestões automáticas de organização sem uso de inteligência artificial.
-5. **Etapa 5: Integração com Modelos de Linguagem para Casos Ambíguos:**
+6. **Etapa 5: Integração com Modelos de Linguagem para Casos Ambíguos:**
    - Classificação com saída estritamente estruturada (JSON schema) para arquivos sem padrão óbvio;
    - Suporte a modelos locais (via Ollama/GGUF) e simulação mock.
-6. **Etapa 6: Gerador do Plano de Operações (*Operation Planner*):**
+7. **Etapa 6: Gerador do Plano de Operações (*Operation Planner*):**
    - Agrupamento de ações propostas em um `ExecutionPlan` atômico;
    - Detecção prévia de colisões de nomes e caminhos de destino.
-7. **Etapa 7: Mecanismo de Prévia e Aprovação Humana:**
+8. **Etapa 7: Mecanismo de Prévia e Aprovação Humana:**
    - Interface de revisão em linha de comando ou Markdown;
    - Validação da decisão explícita de Erick antes de prosseguir.
-8. **Etapa 8: Motor de Execução Transacional:**
+9. **Etapa 8: Motor de Execução Transacional:**
    - Aplicação física de renomeações e movimentações com tratamento de falhas;
    - Garantia de que arquivos com erro não corrompam a estrutura.
-9. **Etapa 9: Diário de Auditoria (Audit Journal):**
-   - Persistência em SQLite local de cada ação executada com metadados completos.
-10. **Etapa 10: Mecanismo de Desfazer (*Undo*):**
+10. **Etapa 9: Diário de Auditoria (Audit Journal):**
+    - Persistência em SQLite local de cada ação executada com metadados completos.
+11. **Etapa 10: Mecanismo de Desfazer (*Undo*):**
     - Capacidade de reverter com 1 comando uma operação transacional gravada no diário.
-11. **Etapa 11: Validação de Ponta a Ponta com Diretório Sintético:**
+12. **Etapa 11: Validação de Ponta a Ponta com Diretório Sintético:**
     - Teste do ciclo completo em diretório controlado gerado com arquivos de teste antes de qualquer uso real.

@@ -9,10 +9,9 @@ from enum import Enum
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 
-
-class SecurityBoundaryError(ValueError):
-    """Disparada quando uma acao tenta escapar da raiz do diretorio autorizado."""
-    pass
+# SecurityBoundaryError e definida na politica unica de fronteira (Etapa 2B) e
+# reexportada aqui para preservar `from src.core.models import SecurityBoundaryError`.
+from .boundary import SecurityBoundaryError, resolve_within
 
 
 class ExecutionNotApprovedError(RuntimeError):
@@ -85,25 +84,32 @@ class ExecutionPlan:
     def validate_safety(self) -> bool:
         """
         Garante que todos os caminhos de origem e destino estejam estritamente
-        dentro de base_dir, prevenindo que '..' escape para o sistema.
+        dentro de base_dir.
+
+        Desde a Etapa 2B, delega a ``boundary.resolve_within``:
+        - ``source_path`` e ``destination_path`` devem ser RELATIVOS a base_dir
+          (absolutos, UNC, unidades, ``..`` e construcoes ambiguas do Win32 sao
+          rejeitados);
+        - o confinamento e verificado por componentes, nunca por ``startswith``;
+        - ``destination_path=None`` significa "sem destino"; string vazia e
+          rejeitada (apontaria para a propria raiz).
+        A validacao e lexical: nao resolve links nem elimina TOCTOU.
         """
-        resolved_base = os.path.abspath(self.base_dir)
-
         for action in self.actions:
-            # Valida source
-            src_full = os.path.abspath(os.path.join(resolved_base, action.source_path))
-            if not src_full.startswith(resolved_base):
+            try:
+                resolve_within(self.base_dir, action.source_path)
+            except SecurityBoundaryError as exc:
                 raise SecurityBoundaryError(
-                    f"Fuga de seguranca: o caminho de origem '{action.source_path}' sai de '{self.base_dir}'"
-                )
+                    f"Fuga de seguranca: o caminho de origem '{action.source_path}' sai de '{self.base_dir}' ({exc})"
+                ) from exc
 
-            # Valida destination se houver
-            if action.destination_path:
-                dst_full = os.path.abspath(os.path.join(resolved_base, action.destination_path))
-                if not dst_full.startswith(resolved_base):
+            if action.destination_path is not None:
+                try:
+                    resolve_within(self.base_dir, action.destination_path)
+                except SecurityBoundaryError as exc:
                     raise SecurityBoundaryError(
-                        f"Fuga de seguranca: o caminho de destino '{action.destination_path}' sai de '{self.base_dir}'"
-                    )
+                        f"Fuga de seguranca: o caminho de destino '{action.destination_path}' sai de '{self.base_dir}' ({exc})"
+                    ) from exc
 
         return True
 
@@ -141,7 +147,16 @@ class ExecutionPlan:
 
 @dataclass
 class ScannerConfig:
-    """Configuracao de seguranca e filtros para o inventario de arquivos."""
+    """
+    Configuracao de seguranca e filtros para o inventario de arquivos.
+
+    ``follow_symlinks``: False por padrao -- symlinks, junctions e reparse
+    points de redirecionamento sao pulados e registrados em
+    ``ScanReport.skipped``. Se True, apenas destinos FISICAMENTE internos a raiz
+    sao seguidos, com prevencao deterministica de ciclos e duplicacao. Reparse
+    points nao redirecionadores, como placeholders OneDrive, sao tratados como
+    entradas comuns, sujeitos ao confinamento fisico (Etapa 2B).
+    """
     include_hidden: bool = False
     follow_symlinks: bool = False
     max_depth: Optional[int] = None
@@ -151,13 +166,22 @@ class ScannerConfig:
 
 @dataclass
 class ScanReport:
-    """Relatorio imutavel da varredura somente leitura."""
+    """
+    Relatorio estruturado da varredura somente leitura.
+
+    ``errors``: falhas de I/O e violacoes de fronteira, sanitizadas (caminho
+    relativo + tipo da excecao + errno; sem mensagens do SO nem caminhos
+    absolutos de entradas).
+    ``skipped``: entradas intencionalmente nao seguidas/registradas (links,
+    reparse points, destinos externos, ciclos/duplicatas), tambem sanitizadas.
+    """
     base_dir: str
     total_files: int
     total_bytes: int
     items: List[FileItem] = field(default_factory=list)
     scan_duration_ms: float = 0.0
     errors: List[str] = field(default_factory=list)
+    skipped: List[str] = field(default_factory=list)
 
     @property
     def extension_counts(self) -> Dict[str, int]:
@@ -166,4 +190,3 @@ class ScanReport:
             ext = item.extension or "(sem extensao)"
             counts[ext] = counts.get(ext, 0) + 1
         return counts
-
