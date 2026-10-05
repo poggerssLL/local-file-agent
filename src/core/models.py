@@ -14,6 +14,30 @@ from typing import List, Dict, Any, Optional
 from .boundary import SecurityBoundaryError, resolve_within
 
 
+@dataclass(frozen=True)
+class FileObservation:
+    """Metadados observados no inventario; nao e um snapshot atomico."""
+    device: int
+    inode: int
+    size: int
+    mtime_ns: int
+    ctime_ns: int
+    nlink: int
+    kind: str
+    attributes: Optional[int] = None
+    reparse_tag: Optional[int] = None
+
+    @classmethod
+    def from_stat(cls, info):
+        import stat
+        kind = 'directory' if stat.S_ISDIR(info.st_mode) else (
+            'file' if stat.S_ISREG(info.st_mode) else 'special')
+        return cls(info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns,
+                   info.st_ctime_ns, info.st_nlink, kind,
+                   getattr(info, 'st_file_attributes', None),
+                   getattr(info, 'st_reparse_tag', None))
+
+
 class ExecutionNotApprovedError(RuntimeError):
     """Disparada quando uma execucao e tentada sem a aprovacao humana explicita."""
     pass
@@ -182,6 +206,8 @@ class ScanReport:
     scan_duration_ms: float = 0.0
     errors: List[str] = field(default_factory=list)
     skipped: List[str] = field(default_factory=list)
+    root_observation: Optional[FileObservation] = None
+    item_observations: Dict[str, FileObservation] = field(default_factory=dict)
 
     @property
     def extension_counts(self) -> Dict[str, int]:

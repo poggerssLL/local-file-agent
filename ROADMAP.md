@@ -1,6 +1,6 @@
 # Roadmap: Local File Agent
 
-Atualizado em: 2026-10-04.
+Atualizado em: 2026-10-05.
 
 ## Regra de Sequência
 
@@ -25,9 +25,15 @@ O roadmap orienta as próximas decisões. Trabalhe em uma única etapa por vez e
    - Política unificada e estrita de caminhos relativos em planos de execução (`src/core/boundary.py`), rejeitando absolutos, UNC, unidades, drive-relative, ADS e escapes;
    - Scanner endurecido (`src/core/scanner.py`): raiz física obrigatória, classificação de links via bit *name surrogate* preservando placeholders em nuvem do OneDrive, prevenção determinística de ciclos e diretórios duplicados, ordenação alfabética e sanitização de mensagens de erros/skips sem vazamento de caminhos absolutos locais;
    - Reconhecimento e tratamento resiliente de corridas TOCTOU e separação explícita entre confinamento lexical e físico.
-4. **Etapa 3: Hashes e Detecção de Duplicidades (Próximo Passo):**
+4. **Etapa 3: Hashes e Detecção de Duplicidades (Aprovada somente para fixtures NTFS locais sintéticas, incluindo complementos):**
    - Cálculo determinístico de hashes SHA-256 com leitura em blocos (*chunks*);
-   - Identificação de arquivos idênticos e cálculo de espaço duplicado.
+   - Sessão separada opt-in, snapshots de inventário e backend Windows local conservador;
+   - Grupos determinísticos e redundância lógica, sem promessa de espaço recuperável;
+   - Fixtures sintéticos e provas Windows nativas; symlink de arquivo sem privilégio permanece lacuna explícita;
+   - Complementos: scope provided_inventory, contagem sanitizada de erros do inventário, documentação de limites/sharing/metadata e higiene BOM;
+   - Gate inicial independente Antigravity aprovado; complementos aceitos pelo coordenador com phase-gate-reviewer e suíte independente 67/66/1;
+   - Baseline 6d24cb0; symlink de folha e riscos residuais continuam limites. Etapa 4 não iniciada.
+   - Complemento de release 2026-10-05 concluído: falha na observação inicial da raiz retorna inventário vazio sanitizado, sem travessia; hashing recusa snapshot ausente antes de conteúdo. Três regressões simuladas; escritor e reviewer independente Codex gpt-6.1-sol high confirmaram 70/69/1, exit 0. Gate aceito exclusivamente em fixtures NTFS locais sintéticas. Commit/push autorizados nominalmente em 2026-10-05; preflight confirmou main remoto em 6d24cb0. A confirmação da publicação deve ser obtida pelo Git após o push.
 5. **Etapa 4: Classificação Heurística e Determinística:**
    - Motor de regras por extensão, convenção de nomes e intervalos de datas;
    - Geração de sugestões automáticas de organização sem uso de inteligência artificial.

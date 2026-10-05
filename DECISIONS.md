@@ -39,3 +39,62 @@
   7. Sanitizar mensagens de erro e de itens pulados sem vazar caminhos absolutos locais, tratando `OSError` e `FileNotFoundError` como falhas parciais de inventário sem interromper a varredura global;
   8. Reconhecer a impossibilidade de eliminar fisicamente corridas TOCTOU, mantendo tratamento resiliente e documentando o risco residual.
 - **Consequências:** Confinamento lexical e físico robusto e determinístico, preservação total dos contratos de `FileItem` e `ScannerConfig`, e introdução de campo aditivo `skipped` em `ScanReport`.
+
+---
+
+## ADR-005: Hashing opt-in por objetos fixados, Windows conservador
+
+- **Status:** Implementada em 2026-10-04; gate inicial aprovado somente para
+  fixtures NTFS locais sintéticas; complementos aprovados pelo coordenador na
+  revisão delimitada com phase-gate-reviewer. Baseline 6d24cb0, sem commit/push.
+- **Contexto:** Checks lexicais/realpath não fixam objetos durante leitura; uma
+  abertura por path posterior à validação reintroduz troca de objeto/ancestral.
+- **Decisão:** Scanner somente metadados, snapshots aditivos no inventário e
+  HashSession separado. Backend stdlib/ctypes fixando raiz/ancestrais/folha,
+  share READ, FileIdInfo 64/128 bits, final paths/attrs/tags/tipo e ReOpenFile
+  do mesmo objeto. Recusar APIs desconhecidas, remoto/case-sensitive,
+  reparse/cloud/recall/especiais/hardlinks; nenhuma segunda abertura de dados por
+  path nem backend POSIX. Handles de metadata não bloqueiam sozinhos share-access;
+  bloqueio comum vem do handle de dados/descendente aberto. Janela anterior a
+  ReOpenFile é detectada, não bloqueada. A travessia intermediária de metadata
+  por path pode contactar SMB antes da recusa, inclusive com symlink permitido
+  por Developer Mode; não se promete zero rede absoluto concorrente. Leitura de
+  dados somente após validação do objeto. ReOpenFile usa flags que a API aceita,
+  após recusa conservadora dos atributos de cloud/recall no handle fixado.
+- **Decisão de budgets:** chunks 64 KiB..1 MiB, padrão 256 KiB; budgets positivos
+  finitos, reserva de uma sondagem, bytes efetivos contados inclusive falhas.
+  Digest parcial None; erro raiz invalida todos os resultados da sessão.
+- **Decisão de grupos:** somente sucessos e objetos distintos por tamanho/hash;
+  ordenação Unicode por paths. Redundância lógica não é espaço recuperável.
+  Nenhuma operação de organização/exclusão é implementada ou autorizada aqui.
+- **Consequências:** Recusa conservadora pode exigir novo inventário. Preservados
+  construtores legados e relatórios. Evidências simuladas/sintéticas/Windows real
+  são distintas; skip de symlink nativo permanece lacuna. Riscos residuais de
+  namespace acima da raiz, mappings, filtros, mutadores privilegiados e metadados
+  restaurados impedem alegar isolamento absoluto/snapshot atômico.
+- **Complemento do gate inicial:** aprovado exclusivamente para fixtures NTFS
+  locais sintéticas; revisão dos complementos aceita pelo coordenador, com
+  suíte independente 67 executados/66 pass/1 skip e exit 0. HashReport explicita
+  scope provided_inventory e conta erros do inventário sem copiar mensagens;
+  esses erros tornam a análise partial preservando sucessos. Complete não prova
+  cobertura de toda a árvore. Dedupe silencioso e exceções inesperadas ficam
+  documentados como limites não bloqueantes, sem ampliar a implementação.
+
+## Complemento da ADR-005: falha no snapshot inicial da raiz
+
+- **Status:** Concluído em 2026-10-05; gate independente Codex gpt-6.1-sol high
+  recebido e aceito: pronto para commit somente para fixtures NTFS locais sintéticas.
+- **Decisão:** Capturar OSError no lstat inicial de scan(), retornar ScanReport
+  vazio com erro relativo '.' e descrição sanitizada de tipo/errno, manter
+  root_observation=None e não iniciar travessia. Não reconstruir snapshot tardio.
+  O hasher existente recusa root_snapshot_missing antes de pin_root/conteúdo
+  quando enabled e suportado. Assinaturas e modo metadata-only preservados.
+- **Evidência:** Três regressões com mocks após construção; suite do escritor
+  70 executados/69 aprovados/1 skip, exit 0. Nenhuma falha real de ACL/remoção
+  de raiz foi induzida. Baseline 6d24cb0 com Etapa 3 preexistente sem commit/push.
+- **Aceite:** Reviewer com execução independente confirmou 70/69/1, exit 0,
+  17 candidatos aceitos e ausência de bloqueadores materiais. Código/testes
+  congelados; registro final exclusivamente documental, sem repetir suíte.
+  Commit/push aguardam autorização nominal; remoto atual desconhecido.
+- **Limites:** Aprovações históricas continuam restritas ao escopo sintético;
+  este complemento não autoriza dados reais, mudanças no backend ou Etapa 4.

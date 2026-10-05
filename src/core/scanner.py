@@ -33,6 +33,7 @@ from typing import List, Optional, Set, Tuple
 from .boundary import is_within_boundary
 from .models import (
     FileItem,
+    FileObservation,
     ScannerConfig,
     ScanReport,
     SecurityBoundaryError,
@@ -127,7 +128,14 @@ class DirectoryScanner:
         """
         start_time = time.perf_counter()
         walk = _ScanState(real_base_key=_canonical_key(self.real_base_dir))
-        self._walk(walk)
+        root_observation = None
+        try:
+            root_observation = FileObservation.from_stat(os.lstat(self.base_dir))
+        except OSError as root_err:
+            walk.errors.append(f"Erro ao acessar '.': {_describe_os_error(root_err)}")
+        else:
+            # Sem observacao inicial da raiz, nao percorrer nem criar snapshots tardios.
+            self._walk(walk)
         duration_ms = (time.perf_counter() - start_time) * 1000
 
         return ScanReport(
@@ -138,6 +146,8 @@ class DirectoryScanner:
             scan_duration_ms=duration_ms,
             errors=walk.errors,
             skipped=walk.skipped,
+            root_observation=root_observation,
+            item_observations=walk.observations,
         )
 
     # ------------------------------------------------------------------ helpers
@@ -234,6 +244,8 @@ class DirectoryScanner:
                 state.skipped.append(f"'{rel_path}': diretorio ja visitado (ciclo ou duplicata)")
                 return None
             state.visited_dirs.add(key)
+            state.observations[rel_path] = FileObservation.from_stat(
+                os.stat(entry.path, follow_symlinks=False))
             return entry.path
 
         if not entry.is_file(follow_symlinks=self.config.follow_symlinks):
@@ -251,7 +263,10 @@ class DirectoryScanner:
             state.skipped.append(f"'{rel_path}': arquivo ja inventariado por outro caminho")
             return None
 
-        stat_info = entry.stat(follow_symlinks=self.config.follow_symlinks)
+        # DirEntry.stat no Windows pode conter st_ino/st_dev/st_nlink zero.
+        # Observar identidade durante o inventario, nunca tardiamente no hasher.
+        stat_info = os.stat(entry.path, follow_symlinks=self.config.follow_symlinks)
+        state.observations[rel_path] = FileObservation.from_stat(stat_info)
         state.seen_files.add(key)
         state.items.append(
             FileItem(
@@ -273,4 +288,5 @@ class _ScanState:
         self.skipped: List[str] = []
         self.visited_dirs: Set[str] = set()
         self.seen_files: Set[str] = set()
+        self.observations = {}
         self.limit_reported = False

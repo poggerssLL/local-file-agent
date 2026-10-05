@@ -1,38 +1,93 @@
-# Prompt de Inicialização para o Codex - Etapa 3 (Local File Agent)
+# Prompt de implementação — Etapa 3
 
-Data: 2026-09-21 (Segunda-feira)  
-Projeto: `Local File Agent`  
-Caminho: `C:/Users/erick/OneDrive/Documentos/Local File Agent`  
-Baseline Esperado: Branch `main`, Commit `bcd8cac`, 10/10 testes unitários aprovados  
+**Entrega original concluída:** texto abaixo é registro da preparação histórica,
+não uma instrução para relançar implementação. Complemento de release da raiz
+concluído em 2026-10-05, suíte do escritor e execução independente do reviewer
+Codex gpt-6.1-sol high 70/69/1, exit 0; gate recebido e aceito somente para
+fixtures NTFS locais sintéticas. Pronto para commit, sem commit/push; remoto
+atual desconhecido. Escopo exclusivo: scanner, regressões e documentação,
+sem relançar hashes/backend ou iniciar Etapa 4. Ver relatório do complemento
+em docs/PHASE_03_COMPLEMENT_ROOT_SNAPSHOT_2026-10-05.md.
 
----
+Preparado em 2026-10-04, antes da implementação. Projeto: Local File Agent.
+Confirme raiz Git igual ao diretório de trabalho autorizado. Baseline confirmado:
+`main`, `6d24cb05f0502d08df12be28529ba2e9f2b6be67`, upstream `origin/main`,
+working tree limpa, 32/32 testes legados aprovados.
 
-## Como Usar
+Executor Codex, modelo gpt-6.1-sol, esforço medium, perfil
+organizer-codex-sol-medium, fallback none. Arquitetura independente Codex high e
+QA Codex medium já despachados; escritor único Codex medium; gate independente
+pendente. Não criar outros workers. Preserve o perfil informado; escale falhas
+concretas de segurança sem relaxar contratos ou trocar executor silenciosamente.
 
-Abra o chat do **Codex** diretamente no diretório do projeto `Local File Agent` e envie o texto abaixo:
+Leia AGENTS, FOUNDATION, PROJECT_STATE, ROADMAP, KNOWN_ISSUES, DECISIONS, README,
+boundary/scanner/models/exports e testes. Use orientação e preparação de prompt
+quando aplicáveis e disponíveis. Implemente somente SHA256 e duplicidades.
 
-```text
-Atue como o arquiteto sênior e organizador do projeto Local File Agent (C:/Users/erick/OneDrive/Documentos/Local File Agent).
+Escrita autorizada: hasher/backend Windows separado; metadados aditivos no
+scanner/models/exports; novos testes/fixtures isolados; este prompt;
+documentação viva acima; novo docs/PHASE_03_HASHES_AND_DUPLICATES_2026-10-04.md.
+Preserve relatórios históricos e synthetic_tree. Escrita de código/documentação
+e criação/remoção segura de fixtures estão autorizadas. I/O sobre arquivos de
+usuário permanece somente leitura, sem uso de dados reais neste gate.
 
-Antes de qualquer ação:
-1. Confirme o diretório e a raiz Git com `git rev-parse --show-toplevel`;
-2. Verifique o baseline esperado: branch `main`, commit `bcd8cac`, working tree limpa;
-3. Leia o AGENTS.md, FOUNDATION.md, ROADMAP.md e docs/PHASE_02_READONLY_INVENTORY_2026-09-18.md;
-4. Execute a suíte de testes existente com `python -m unittest discover tests` e confirme 10 de 10 testes aprovados.
+Contrato: HashConfig(enabled=False, chunk_size=262144, limites finitos positivos
+max_file_bytes/max_total_bytes), bool não é inteiro, chunks 65536..1048576.
+HashSession(base_dir, config).analyze(ScanReport) separado do scanner. Disabled e
+unsupported: zero reads. Snapshots aditivos do inventário (raiz/arquivos/pastas)
+com defaults, ausência recusa hash; sem identidade tardia. Ignorar hashes de
+entrada e não mutar relatório. Windows local, capacidades comprovadas, stdlib e
+ctypes; nenhum fallback POSIX ou segunda abertura de dados por path. Fixar raiz
+e ancestrais, validar identidade/tipo/attrs/tag/caminho final pelo handle antes
+de read e depois; dados via ReOpenFile do mesmo objeto validado. Rejeitar UNC,
+remoto, case-sensitive, especiais, reparse/cloud/offline/recall e hardlinks.
+Fechar handles em finally. Caminhos relativos validados pela boundary antes de
+syscalls; erros sanitizados sem raw input, absolutos ou str(exc). Falha raiz
+encerra/invalida sessão. Ler no máximo tamanho esperado + 1 byte de sondagem,
+orçamento antes de cada read, bytes efetivos contabilizados inclusive falhas.
+Short read positivo não é EOF. Digest parcial None. Grupos somente sucessos
+por (size,SHA256), paths/grupos Unicode ordenados. Duplicar path/item não gera
+redundância. Redundância lógica não significa espaço recuperável.
 
-Seu Objetivo (Etapa 3 - Hashes SHA-256 e Detecção de Duplicidades):
-1. Auditar as Etapas 1 (Fundação e Segurança) e 2 (Inventário Somente Leitura) implementadas pela equipe Antigravity multi-agente;
-2. Implementar a Etapa 3 do ROADMAP.md:
-   - Criar módulo `src/core/hasher.py` com cálculo determinístico de hash SHA-256 lendo arquivos em blocos (chunks de 64 KB a 1 MB) para não estourar memória RAM;
-   - Criar lógica determinística de agrupamento e detecção de arquivos duplicados (por tamanho e hash);
-   - Integrar o cálculo de hash opcional ao `DirectoryScanner` ou `ScanReport`;
-3. Criar a suíte de testes unitários para a Etapa 3 em `tests/test_hasher.py` utilizando a árvore de fixtures sintéticos (`tests/fixtures/synthetic_tree/`);
-4. Atualizar ROADMAP.md, PROJECT_STATE.md e gerar o relatório em `docs/PHASE_03_HASHES_AND_DUPLICATES_2026-09-21.md`.
+Fixtures mutáveis: TemporaryDirectory sob tests/fixtures/phase3_runtime, limpeza
+apenas após checagem da subárvore, sem seguir links. Sentinelas fora da raiz
+TESTADA ficam dentro da fixture do projeto. Sem nuvem real/dados pessoais.
+Testar vetores/chunks/budgets/ordenação/pares/trios/vazios, input hostil,
+snapshots ausentes/stale/root mismatch, falhas/cleanup, truncar/crescer/mudar e
+trocar identidade mesmo size/mtime, folha/ancestral externos antes de read.
+Validar Windows nativo identidade/sharing/junction/hardlink; skips são lacunas e
+bloqueiam alegações correspondentes. Provar conteúdo/size/mtime preservados em
+fixtures de leitura; não prometer atime/snapshot atômico/confinamento absoluto.
+Documentar riscos residuais: metadados restaurados, mappings, filtros e
+mutadores privilegiados. Distinguir mocks, sintético e Windows real.
 
-Regras Invioláveis:
-- Operação 100% SOMENTE LEITURA: nenhuma modificação, deleção ou movimentação de arquivos em disco;
-- Não acesse nem processe arquivos reais de Erick; trabalhe estritamente com os fixtures sintéticos;
-- Mandato de Delegação Ativa: Não execute a Etapa 3 de forma solitária ou monobloco. Decomponha a entrega em sub-papéis especializados (especificação de chunks, implementação de I/O, suíte de testes e auditoria de conformidade), registrando explicitamente a proveniência de cada atividade no relatório;
-- Mantenha 100% de confinamento ao diretório do projeto;
-- Não execute git push sem aprovação nominal expressa de Erick.
-```
+Executar python -B -m unittest discover tests -v e git diff --check. Revisar diff
+higiene e limites. Sem rede/installs/credenciais/GUI/commit/push/merge/publicação,
+motores de operação ou Etapa 4. Correções e nova validação dentro da etapa
+estão autorizadas; ampliação exige intervenção. Registrar papéis reais sem IDs
+runtime/caminhos pessoais; não aprovar antecipadamente o gate independente.
+Reportar resultado, evidências e limitações; parar antes da próxima etapa.
+
+## Complementos autorizados após gate inicial
+
+Gate inicial aprovado somente para fixtures NTFS locais sintéticas. Na mesma
+Etapa 3, acrescentar HashReport.inventory_error_count (default 0, sem mensagens
+do scanner) e scope provided_inventory. Inventário com erros produz partial
+preservando hashes válidos; complete cobre só itens recebidos, nunca árvore
+integral/filtros. Testar erro/limite de inventário, original preservado e mensagem
+sensível não copiada. Corrigir documentação: READ_ATTRIBUTES não estabiliza
+sozinho share-access; bloqueio comum vem do handle de dados/descendente aberto,
+janela antes de ReOpenFile detectada e não bloqueada. Metadata por path pode
+atravessar symlink intermediário permitido em Developer Mode e contactar SMB
+antes da recusa; sem promessa de zero rede absoluto concorrente. Não implementar
+NtCreateFile. Remover somente os BOMs introduzidos em README, PROJECT_STATE e
+neste prompt. Registrar dedupe silencioso/exceções inesperadas como limites não
+bloqueantes, sem ampliar implementação. Atualizar evidências, validar e congelar
+a árvore para nova revisão independente antes de concluir a entrega.
+
+Registro final: gate inicial Antigravity / Claude Opus 5.5 high aprovado somente
+para fixtures NTFS locais sintéticas; complementos aprovados em revisão
+delimitada do coordenador com phase-gate-reviewer, sem novo despacho Antigravity.
+Coordenador confirmou suíte independente 67/66/1, exit 0, runtime limpo e
+diff-check sem erros. Baseline 6d24cb0, alterações sem commit/push. Skip de
+symlink de folha e riscos residuais mantidos; Etapa 4/dados reais fora do escopo.

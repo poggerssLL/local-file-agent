@@ -10,6 +10,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from src.core.boundary import SecurityBoundaryError
+from src.core.hasher import HashConfig, HashSession
 from src.core.models import ScannerConfig, ScanReport
 from src.core.scanner import (
     DirectoryScanner,
@@ -28,6 +29,61 @@ FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixtures", "synthetic_tre
 
 
 class TestScannerHardening(unittest.TestCase):
+    def _assert_initial_root_failure(self, exception, description):
+        # Injetar somente depois do constructor: a raiz era valida ao construir.
+        scanner = DirectoryScanner(FIXTURE_DIR)
+        backend = MagicMock(spec=["supported", "pin_root"])
+        backend.supported = True
+        with patch("src.core.scanner.os.lstat", side_effect=exception) as lstat_call, \
+                patch.object(scanner, "_walk") as walk, \
+                patch("src.core.scanner.os.scandir") as scandir, \
+                patch("builtins.open") as content_open:
+            report = scanner.scan()
+            self.assertIsInstance(report, ScanReport)
+            self.assertEqual(report.base_dir, scanner.base_dir)
+            self.assertEqual(report.total_files, 0)
+            self.assertEqual(report.total_bytes, 0)
+            self.assertEqual(report.items, [])
+            self.assertEqual(report.item_observations, {})
+            self.assertEqual(report.skipped, [])
+            self.assertIsNone(report.root_observation)
+            self.assertGreaterEqual(report.scan_duration_ms, 0)
+            self.assertEqual(report.errors, [f"Erro ao acessar '.': {description}"])
+            self.assertNotIn(exception.strerror or "mensagem-ficticia", repr(report.errors))
+            self.assertNotIn(exception.filename, repr(report.errors))
+            self.assertNotIn(scanner.base_dir, repr(report.errors))
+
+            hashes = HashSession(scanner.base_dir, HashConfig(enabled=True),
+                                 _backend=backend).analyze(report)
+            self.assertEqual(hashes.status, "invalid_root")
+            self.assertEqual([issue.code for issue in hashes.errors], ["root_snapshot_missing"])
+            self.assertEqual(hashes.inventory_error_count, 1)
+            self.assertEqual(hashes.bytes_read, 0)
+            self.assertEqual(hashes.results, [])
+            self.assertEqual(hashes.groups, [])
+            backend.pin_root.assert_not_called()  # Nenhum stream de dados pode ser aberto.
+            lstat_call.assert_called_once_with(scanner.base_dir)  # Sem snapshot tardio.
+            walk.assert_not_called()
+            scandir.assert_not_called()
+            content_open.assert_not_called()
+
+    def test_initial_root_disappeared_returns_sanitized_report_and_refuses_hash(self):
+        self._assert_initial_root_failure(
+            FileNotFoundError(2, "mensagem-ficticia-raiz-sumiu", "C:/ficticio/raiz-ausente"),
+            "FileNotFoundError (errno=2)")
+
+    def test_initial_root_permission_denied_returns_sanitized_report_and_refuses_hash(self):
+        self._assert_initial_root_failure(
+            PermissionError(13, "mensagem-ficticia-acesso-negado", "C:/ficticio/raiz-inacessivel"),
+            "PermissionError (errno=13)")
+
+    def test_initial_root_os_error_returns_sanitized_report_and_refuses_hash(self):
+        for number, description in ((5, "OSError (errno=5)"), (None, "OSError")):
+            with self.subTest(errno=number):
+                self._assert_initial_root_failure(
+                    OSError(number, "mensagem-ficticia-falha-io", "C:/ficticio/raiz-io"),
+                    description)
+
     def test_describe_os_error_sanitization(self):
         err_fnf = FileNotFoundError(2, "Arquivo sumiu no disco: C:/Segredo/Privado.txt")
         desc = _describe_os_error(err_fnf)
