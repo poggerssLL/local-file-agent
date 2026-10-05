@@ -1,8 +1,8 @@
 # Arquitetura e Fundação Viva: Local File Agent
 
 Atualizado em: 2026-10-05.
-Etapa atual: **Etapa 3 - Hashes e Duplicidades**, gate inicial e revisão final
-dos complementos aprovados somente para fixtures NTFS locais sintéticas.
+Etapa atual: **Etapa 4 - Classificação determinística**, implementada localmente,
+gate técnico independente aprovado e aceito pelo coordenador. Etapa 3 publicada em `49c7dbe`; limites preservados.
 
 ---
 
@@ -31,7 +31,7 @@ O `Local File Agent` é um agente de software local projetado para organizar, cl
    - O planejador (`OperationPlanner`) gera um plano imutável (`ExecutionPlan`) contendo a lista de ações propostas.
    - O motor transacional (`TransactionEngine`) **recusa-se** a executar qualquer plano que não possua a flag `approved = True` atribuída por decisão humana.
 2. **Determinismo em Primeiro Lugar:**
-   - A classificação tenta regras heurísticas e determinísticas primeiro (extensões, padrões de data, prefixos conhecidos). Apenas casos ambíguos consultam modelos de linguagem locais com saída estruturada.
+   - A classificação tenta regras heurísticas e determinísticas primeiro (extensões, padrões de data, prefixos conhecidos). A consulta a modelos locais nos casos ambíguos é planejada para a Etapa 5.
 3. **Mecanismo de Desfazer (*Undo Journal*):**
    - Nenhuma movimentação de arquivo é feita sem antes registrar em log SQLite a tupla reversível: `{id, timestamp, original_path, target_path, original_hash}`.
 4. **Política Rígida de Fronteira e Confinamento (Etapa 2B):**
@@ -138,7 +138,7 @@ podem interferir nas fixtures e não foram diagnosticados como causa das falhas.
 
 ---
 
-## 4. Evolução por Etapas
+## 4. Evidências históricas da Etapa 3
 
 Gate inicial: auditoria independente Antigravity / Claude Opus 5.5 high,
 manual conforme contrato. Complementos: revisão delimitada aprovada pelo
@@ -149,5 +149,18 @@ Skip de symlink de folha e riscos residuais permanecem; nenhuma aprovação
 para dados reais, nuvem ou Etapa 4 foi concedida.
 
 As fases subsequentes seguem o [ROADMAP](ROADMAP.md). Os módulos de
-classificação, execução, SQLite e undo no desenho são planejados; não se
-deduz sua implementação do diagrama. A Etapa 4 não foi iniciada.
+execução, SQLite e undo no desenho são planejados. A classificação determinística
+da Etapa 4 está implementada; modelos de linguagem permanecem para a Etapa 5.
+
+## Contrato da Etapa 4
+
+ClassificationSession recebe ScanReport e devolve relatório imutável sobre metadados,
+sem I/O ou mutação. Extensão, glob do basename e intervalo UTC epoch [início,fim)
+combinam por AND; maior prioridade vence, empate entre categorias é ambiguous.
+Todos os matches ficam auditáveis. Complete cobre apenas provided_inventory,
+sem provar cobertura integral ou classificação sem ambiguidade. Erros herdados
+são contados e tornam partial sem copiar mensagens. Sugestões omitem entradas
+inválidas, preservam todas as duplicatas como invalid e usam ordenação casefold
+com desempate por path Unicode. IDs/categorias são tokens, nunca destinos.
+Limites: 50.000 itens e 256 regras; nenhum plano, SQLite ou LLM é chamado.
+Contrato completo: docs/PHASE_04_DETERMINISTIC_CLASSIFICATION_2026-10-05.md.

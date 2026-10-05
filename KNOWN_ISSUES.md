@@ -29,7 +29,7 @@ Atualizado em: 2026-10-05.
   sanitização das mensagens não torna o relatório inteiro anônimo. Suíte do
   escritor e execução independente do reviewer Codex gpt-6.1-sol high 70/69/1,
   exit 0; gate aceito exclusivamente para fixtures NTFS locais sintéticas.
-  Sem commit/push; estado atual do remoto desconhecido, sem fetch/rede.
+  Registro histórico desse gate; Etapa 3 posteriormente publicada em `49c7dbe`.
 
 - Não há snapshot atômico nem confinamento absoluto. READ_ATTRIBUTES sozinho
   não estabiliza share-access. O handle de dados com GENERIC_READ e share READ
@@ -94,3 +94,24 @@ Atualizado em: 2026-10-05.
   Exceções inesperadas fora de HashFailure/OSError podem propagar em vez de
   gerar HashReport sanitizado. Não foi ampliado o tratamento de exceções nesta
   etapa; consumidores devem tratar falhas inesperadas sem publicar tracebacks.
+
+## Limites da Etapa 4
+
+Classificação é lexical e sobre metadados fornecidos. Não verifica existência,
+identidade física, conteúdo ou significado; complete não prova cobertura da
+árvore. Ambiguidade não inicia LLM nem plano. Casefold de duplicatas é conservador
+no Windows e pode recusar nomes distintos em diretórios case-sensitive.
+Categorias são rótulos de convenção, não destinos. Intervalos de data exigem UTC
+epoch numérico; não inferem datas por nomes. Limites de itens/regras não são
+benchmark de memória/latência máxima; matches auditáveis podem consumir memória
+proporcional a itens vezes regras.
+
+Pré-requisito legado de clones limpos: o scanner espera uma fixture oculta
+não versionada. No checkout isolado foi criada uma sentinela sintética ignorada
+(.oculto/fixture.tmp), sem alterar fixtures versionadas/originais; a falha
+inicial e a preparação constam no relatório 4. A dívida de reprodutibilidade
+ainda requer manutenção própria.
+
+Preflight Gemini sandbox não concluiu lifecycle Orca: check/worker_done EPERM.
+Isso não é ausência de confiança no projeto nem prova de falha geral do Orca.
+Sem bypass; achados técnicos são revisão textual, não gate aprovado.

@@ -3,9 +3,10 @@
 Inventário local e determinístico, com controle humano e privacidade.
 Etapas 1, 2 e 2B concluídas; Etapa 3 com gate inicial aprovado somente para
 fixtures NTFS locais sintéticas e complementos aprovados na revisão delimitada
-do coordenador. Baseline 6d24cb0; entrega consolidada com publicação autorizada
-nominalmente em 2026-10-05. O SHA e a confirmação do push são verificados pelo Git.
-Classificação, persistência SQLite, execução transacional e undo são planejados.
+do coordenador. Baseline publicado da Etapa 3: `49c7dbe`. Etapa 4 concluída localmente,
+publicação autorizada nominalmente em 2026-10-05; SHA e remoto confirmados pelo Git.
+Classificação determinística da Etapa 4 implementada localmente, com gate técnico aprovado.
+Persistência SQLite, execução transacional e undo são planejados.
 
 O scanner coleta somente metadados. O hasher é separado e opt-in; por padrão
 não lê conteúdo. O backend atual aceita Windows/NTFS local com capacidades
@@ -96,3 +97,23 @@ Gate independente Codex gpt-6.1-sol high aprovado e aceito pelo coordenador:
 execução independente 70/69/1, exit 0, pronto para commit exclusivamente no
 escopo NTFS local sintético. Sem commit/push; remoto atual desconhecido.
 Evidências e limites: [relatório do complemento](docs/PHASE_03_COMPLEMENT_ROOT_SNAPSHOT_2026-10-05.md).
+
+## Classificação determinística (Etapa 4)
+
+Exemplo somente com metadados fictícios em memória, sem varrer disco:
+
+```python
+from src.core import FileItem, ScanReport, ClassificationSession
+inventory = ScanReport("synthetic", 1, 0, [FileItem("fiction/note.txt", 0, 0)])
+report = ClassificationSession().analyze(inventory)
+assert report.category_counts == {"documents": 1}
+```
+
+Regras por extensão, glob do basename e intervalo UTC epoch [início,fim),
+com prioridade explícita. Conflitos ficam ambiguous; desconhecidos, unmatched.
+Complete cobre apenas provided_inventory. Nenhum arquivo é aberto, categorizado
+no disco ou movido; não há geração/execução implícita de planos.
+Suíte atual: 90 testes, 89 aprovados e o skip legado de symlink.
+Clones limpos precisam preparar a fixture oculta sintética do teste legado
+do scanner; o Git contém cinco dos seis arquivos esperados por esse teste.
+Veja [contrato, evidências e limites](docs/PHASE_04_DETERMINISTIC_CLASSIFICATION_2026-10-05.md).

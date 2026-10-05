@@ -4,19 +4,27 @@ Atualizado em: 2026-10-05.
 
 ## Resumo factual
 
-- Repositório Local File Agent; branch main; upstream origin/main.
+- Repositório principal Local File Agent: main, upstream origin/main.
+  Implementação e revisão em checkout isolado detached `49c7dbe`.
 - Baseline de entrada confirmado: 6d24cb05f0502d08df12be28529ba2e9f2b6be67,
-  árvore limpa, 32/32 testes legados. A Etapa 3 é consolidada nesta entrega.
+  árvore limpa, 32/32 testes legados. A Etapa 3 foi publicada em `49c7dbe`.
 - Etapa 3 implementada: HashSession separada, SHA256 opt-in em chunks, snapshots
   aditivos e grupos por tamanho/hash; backend Windows local conservador por handles.
 - Gate inicial independente e revisão delimitada dos complementos aprovados
   somente para fixtures NTFS locais sintéticas; decisão aceita.
-  Etapa 4 não iniciada.
+  Etapa 4 implementada localmente sobre `49c7dbe`; gate técnico independente aprovado e aceito pelo coordenador.
+  Commit/push da Etapa 4 autorizados por Erick em 2026-10-05. A entrega é
+  consolidada neste commit; SHA e publicação são confirmados pelo Git.
+  Etapa 5 não iniciada.
 
 ## Evidências atuais
 
-`python -B -m unittest discover tests -v`: 70 executados, 69 aprovados, 1 skip.
+`python -B -m unittest discover tests -q`: 90 executados, 89 aprovados, 1 skip.
+20 testes novos usam somente metadados sintéticos em memória.
+Relatório: docs/PHASE_04_DETERMINISTIC_CLASSIFICATION_2026-10-05.md.
 Todos os 32 legados passaram. `git diff --check` sem erros de whitespace.
+
+## Evidências históricas da Etapa 3
 
 Simulações: budgets, chunks e short reads, vetores, grupos/permutação Unicode,
 input hostil, snapshots ausentes/stale, falhas/mutações e hashes recebidos ignorados.
@@ -34,8 +42,8 @@ conta cloud, dados pessoais, rede ou execução de organização/exclusão.
 
 Scanner continua sem leitura de conteúdo. HashConfig padrão é disabled;
 unsupported implica zero reads. Inventários legados sem snapshots recusam hash.
-Planos continuam dry_run=True e approved=False por padrão. Persistência SQLite,
-execução/undo e classificação são trabalho futuro. Redundância lógica não é
+Planos continuam dry_run=True e approved=False por padrão. Persistência SQLite e
+execução/undo são trabalho futuro; classificação determinística está implementada. Redundância lógica não é
 espaço recuperável. Limites residuais constam em KNOWN_ISSUES.
 
 Complementos do gate: HashReport tem scope provided_inventory e

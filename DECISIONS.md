@@ -98,3 +98,14 @@
   Commit/push aguardam autorização nominal; remoto atual desconhecido.
 - **Limites:** Aprovações históricas continuam restritas ao escopo sintético;
   este complemento não autoriza dados reais, mudanças no backend ou Etapa 4.
+
+## ADR-006 — Classificação pura de metadados (Etapa 4)
+
+Data: 2026-10-05. Implementada, gate técnico independente aprovado e aceito pelo coordenador.
+Separar ClassificationSession do scanner, hasher e planejador. Regras imutáveis
+por extensão/nome/data produzem sugestões e motivos auditáveis sem I/O, leitura
+de conteúdo, LLM, persistência ou mutação. Maior prioridade vence; empate entre
+categorias é ambiguous. Duplicatas casefold são recusadas em todas as entradas,
+com contagem explícita. Ordenação usa casefold e path como desempate, sem mudar
+o hasher. Erros de entrada sanitizados e inventário herdado por contagem apenas.
+Complete se limita ao inventário fornecido e não equivale a plano aprovado.

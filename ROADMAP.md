@@ -32,11 +32,14 @@ O roadmap orienta as próximas decisões. Trabalhe em uma única etapa por vez e
    - Fixtures sintéticos e provas Windows nativas; symlink de arquivo sem privilégio permanece lacuna explícita;
    - Complementos: scope provided_inventory, contagem sanitizada de erros do inventário, documentação de limites/sharing/metadata e higiene BOM;
    - Gate inicial independente Antigravity aprovado; complementos aceitos pelo coordenador com phase-gate-reviewer e suíte independente 67/66/1;
-   - Baseline 6d24cb0; symlink de folha e riscos residuais continuam limites. Etapa 4 não iniciada.
+   - Baseline 6d24cb0; symlink de folha e riscos residuais continuam limites. Etapa 3 publicada em `49c7dbe`; Etapa 4 implementada localmente, gate técnico aprovado.
    - Complemento de release 2026-10-05 concluído: falha na observação inicial da raiz retorna inventário vazio sanitizado, sem travessia; hashing recusa snapshot ausente antes de conteúdo. Três regressões simuladas; escritor e reviewer independente Codex gpt-6.1-sol high confirmaram 70/69/1, exit 0. Gate aceito exclusivamente em fixtures NTFS locais sintéticas. Commit/push autorizados nominalmente em 2026-10-05; preflight confirmou main remoto em 6d24cb0. A confirmação da publicação deve ser obtida pelo Git após o push.
-5. **Etapa 4: Classificação Heurística e Determinística:**
+5. **Etapa 4: Classificação Heurística e Determinística (implementada; gate técnico aprovado):**
    - Motor de regras por extensão, convenção de nomes e intervalos de datas;
-   - Geração de sugestões automáticas de organização sem uso de inteligência artificial.
+   - Sugestões sobre metadados somente, regras auditáveis, sem I/O/planos/LLM;
+   - 20 testes novos; suíte 90/89/1, exit 0, com limites sintéticos preservados;
+   - Commit/push autorizados por Erick em 2026-10-05; publicação verificável no Git;
+   - Próxima etapa planejada é a 5, ainda não iniciada.
 6. **Etapa 5: Integração com Modelos de Linguagem para Casos Ambíguos:**
    - Classificação com saída estritamente estruturada (JSON schema) para arquivos sem padrão óbvio;
    - Suporte a modelos locais (via Ollama/GGUF) e simulação mock.
